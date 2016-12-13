@@ -2,7 +2,7 @@ organization := "eu.inn"
 
 name := "kafka-mimic"
 
-version := "1.0"
+version := "1.0-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
@@ -35,14 +35,16 @@ packResourceDir += (baseDirectory.value / "src/main/resources" -> "conf")
 
 packJarNameConvention := "full"
 
+val akkaVersion = "2.4.14"
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %%  "akka-actor"      % "2.4.1",
-  "com.typesafe.akka" %%  "akka-slf4j"      % "2.4.1",
-  "com.typesafe.akka" %%  "akka-testkit"    % "2.4.1"   % "test",
-//  "ch.qos.logback"    %   "logback-classic" % "1.1.3",
-  "org.scalatest"     %%  "scalatest"       % "2.2.1"   % "test",
-  "ru.inn"            %   "jmx-javaagent"   % "1.0",
-  "jcifs"             %   "jcifs"           % "1.3.17",
-  "org.apache.kafka"  %% "kafka"            % "0.8.2.2" exclude("org.slf4j", "slf4j-log4j12"),
-  "eu.inn"            %% "fluentd-scala"    % "0.1.20"
+  "org.typelevel"         %%  "cats"              % "0.8.1",
+  "com.typesafe.akka"     %%  "akka-actor"        % akkaVersion,
+  "com.typesafe.akka"     %%  "akka-slf4j"        % akkaVersion,
+  "ch.qos.logback"        %   "logback-classic"   % "1.1.7",
+  "org.apache.kafka"      %%  "kafka"             % "0.8.2.2" exclude("org.slf4j", "slf4j-log4j12"),
+  "nl.grons"              %%  "metrics-scala"     % "3.5.5",
+  "io.dropwizard.metrics" %   "metrics-graphite"  % "3.1.2",
+  "com.typesafe"          %   "config"            % "1.3.1",
+  "org.scalatest"         %%  "scalatest"         % "2.2.6"     % "test",
+  "com.typesafe.akka"     %%  "akka-testkit"      % akkaVersion % "test"
 )

@@ -1,24 +1,29 @@
 package eu.inn.kafka
 
 import akka.actor.ActorRef
+import kafka.javaapi.consumer.ConsumerConnector
+import org.I0Itec.zkclient.ZkClient
 
 package object mimic {
 
-  case object Start
+  object Start
 
-  case object RequestShutdown
-  case object Shutdown
+  object NotConnected
+  final case class Connected(sourceZk: ZkClient, targetZk: ZkClient, connector: ConsumerConnector)
 
-  case object RequestSync
-  case object Sync
-  case object SyncCompleted
+  object RequestShutdown
+  object Shutdown
 
-  case object RequestReassign
-  case object Reassign
-  case class Assignment(job: Job)
+  object RequestSync
+  object Sync
+  object SyncCompleted
 
-  case object NextBatch
-  case object BatchCompleted
+  object RequestReassign
+  object Reassign
+  final case class Assignment(job: Job)
 
-  case class Error(throwable: Throwable, actor: ActorRef)
+  object NextBatch
+  object BatchCompleted
+
+  final case class Error(throwable: Throwable, actor: ActorRef)
 }

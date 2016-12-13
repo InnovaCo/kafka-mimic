@@ -1,10 +1,10 @@
 package eu.inn.kafka.mimic
 
+import java.io.File
 import java.util.Properties
 
 import com.typesafe.config.{Config, ConfigFactory}
 import eu.inn.kafka.mimic.tools.Utils
-import eu.inn.util.ConfigComponent
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArraySerializer
 
@@ -12,45 +12,51 @@ import scala.collection.JavaConversions._
 import scala.util.matching.Regex
 
 case class ZkConfig(
-                     connectionString: String,
-                     connectionTimeout: Int,
-                     sessionTimeout: Int
-                   )
+  connectionString: String,
+  connectionTimeout: Int,
+  sessionTimeout: Int
+)
 
 case class AppConfig(
-                      sourceZkConfig: ZkConfig,
-                      targetZkConfig: ZkConfig,
-                      consumerConfig: Properties,
-                      producerConfig: Properties,
-                      whitelist: Seq[Regex],
-                      blacklist: Seq[Regex],
-                      prefix: String,
-                      partitioner: Partitioner,
-                      replicationFactor: Int,
-                      workersCount: Int,
-                      batchSize: Int,
-                      skipCorrupted: Boolean
-                    )
+  sourceZkConfig: ZkConfig,
+  targetZkConfig: ZkConfig,
+  consumerConfig: Properties,
+  producerConfig: Properties,
+  whitelist: Seq[Regex],
+  blacklist: Seq[Regex],
+  prefix: String,
+  partitioner: Partitioner,
+  replicationFactor: Int,
+  workersCount: Int,
+  batchSize: Int,
+  skipCorrupted: Boolean
+)
 
-trait AppConfigComponent {
+object ConfigComponent {
+  val configPath = Option(System.getProperty("config.path"))
+  val config = configPath.map(c ⇒ ConfigFactory.parseFile(new File(c))).getOrElse(ConfigFactory.empty())
+      .withFallback(ConfigFactory.load())
+      .getConfig("inn.kafka-mimic")
+}
 
-  this: ConfigComponent ⇒
+trait ConfigComponent {
+
+  val config = ConfigComponent.config
 
   val appConfig = {
-    val conf = config.getConfig("inn.kafka-mimic")
     AppConfig(
-      buildZkConfig(conf.getConfig("source.zookeeper")),
-      buildZkConfig(conf.getConfig("target.zookeeper")),
-      buildConsumerConfig(conf),
-      buildProducerConfig(conf),
-      conf.getStringList("source.whitelist").map(_.r),
-      conf.getStringList("source.blacklist").map(_.r),
-      conf.getString("target.prefix"),
-      resolvePartitioner(conf.getString("target.partitioning")),
-      conf.getInt("target.replication-factor"),
-      conf.getInt("workers"),
-      conf.getInt("batch.size"),
-      conf.getBoolean("source.skip-corrupted")
+      buildZkConfig(config.getConfig("source.zookeeper")),
+      buildZkConfig(config.getConfig("target.zookeeper")),
+      buildConsumerConfig(config),
+      buildProducerConfig(config),
+      config.getStringList("source.whitelist").map(_.r),
+      config.getStringList("source.blacklist").map(_.r),
+      config.getString("target.prefix"),
+      resolvePartitioner(config.getString("target.partitioning")),
+      config.getInt("target.replication-factor"),
+      config.getInt("workers"),
+      config.getInt("batch.size"),
+      config.getBoolean("source.skip-corrupted")
     )
   }
 

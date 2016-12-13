@@ -1,11 +1,10 @@
 package eu.inn.kafka.mimic
 
-import eu.inn.util.Logging
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-object MainApp extends App with ComponentRegistry with Logging {
+
+object MainApp extends App with ComponentRegistry with Logging with Metrics {
 
   log.info("Starting kafka mimic.")
 
@@ -13,6 +12,8 @@ object MainApp extends App with ComponentRegistry with Logging {
     coordinator ! RequestShutdown
     Await.result(actorSystem.whenTerminated, 15.seconds)
   } })
+
+  startMetricsReporting()
 
   coordinator ! Start
 }

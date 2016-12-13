@@ -1,22 +1,17 @@
 package eu.inn.kafka.mimic
 
-import akka.actor.{Actor, ActorRef, Props}
-import eu.inn.util.Logging
-import eu.inn.util.metrics.StatsComponent
+import akka.actor.{Actor, ActorRef, PoisonPill, Props}
 import kafka.consumer.{ConsumerIterator, ConsumerTimeoutException}
-import kafka.message.MessageAndMetadata
 import kafka.utils.IteratorTemplate
 
 import scala.util.control.NonFatal
 
 trait WorkerComponent {
 
-  this: AppConfigComponent
+  this: ConfigComponent
     with ActorSystemComponent
-    with StatsComponent
+    with MetricsComponent
     with PublisherComponent ⇒
-
-  private val stats = createStats("kafka-mimic.worker")
 
   def buildWorker(name: String): ActorRef =
     actorSystem.actorOf(Props(classOf[WorkerActor], this), name)
@@ -37,7 +32,7 @@ trait WorkerComponent {
         var count = 0
 
         try {
-          while (/*it.hasNext() && */count < appConfig.batchSize) {
+          while (count < appConfig.batchSize) {
             try {
               val m = it.next()
               publisher.send(job.topicMap(m.topic), m)
@@ -54,12 +49,12 @@ trait WorkerComponent {
             sender ! e
         }
 
-        stats.meter("messages").mark(count)
-
-        //log.trace(s"Produced $count messages from $self-$startingJobIndex")
-
+        metrics.meter("messages").mark(count)
 
         sender ! BatchCompleted
+
+      case PoisonPill ⇒
+        log.debug(s"Worker $job is closing")
     }
 
     private def resetIteratorState(it: ConsumerIterator[Array[Byte], Array[Byte]]): Unit = {

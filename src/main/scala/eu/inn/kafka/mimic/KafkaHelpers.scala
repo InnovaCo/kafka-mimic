@@ -2,19 +2,17 @@ package eu.inn.kafka.mimic
 
 import java.util.Properties
 
-import eu.inn.util.Logging
 import kafka.admin.AdminUtils
-import kafka.consumer.ConsumerIterator
 import kafka.utils.{ZKStringSerializer, ZkUtils}
 import org.I0Itec.zkclient.ZkClient
 
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
 
+final case class TopicDetails(replicationFactor: Int, partitions: Int, config: Map[String, String])
+
 trait KafkaHelpers {
   self: Logging ⇒
-
-  case class TopicDetails(replicationFactor: Int, partitions: Int, config: Map[String, String])
 
   def buildZkClient(config: ZkConfig) = {
     new ZkClient(
@@ -32,7 +30,7 @@ trait KafkaHelpers {
       .toMap
   }
 
-  def describeTopic(topic: String, zk: ZkClient): Option[TopicDetails] = {
+  private def describeTopic(topic: String, zk: ZkClient): Option[TopicDetails] = {
     ZkUtils.getPartitionsForTopics(zk, topic :: Nil).headOption match {
       case Some((_, partitions)) if partitions.nonEmpty ⇒
         val replicationFactor = ZkUtils.getReplicasForPartition(zk, topic, 0).size

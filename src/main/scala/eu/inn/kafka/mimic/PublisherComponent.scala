@@ -3,8 +3,6 @@ package eu.inn.kafka.mimic
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.{ConcurrentHashMap, Future}
 
-import eu.inn.util.Logging
-import eu.inn.util.metrics.StatsComponent
 import kafka.message.MessageAndMetadata
 import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.TopicPartition
@@ -13,9 +11,8 @@ import scala.collection.JavaConversions._
 
 trait PublisherComponent {
 
-  this: AppConfigComponent
-    with ActorSystemComponent
-    with StatsComponent ⇒
+  this: ConfigComponent
+    with ActorSystemComponent ⇒
 
   val publisher = new KafkaPublisher
 
